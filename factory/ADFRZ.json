@@ -1,0 +1,9 @@
+{
+	"name": "ADFRZ",
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "eb07a787-29e3-4196-a699-f7076bb44176",
+		"tenantId": "e6ad75bb-e91a-4c7d-a049-86122e5bd97f"
+	}
+}
