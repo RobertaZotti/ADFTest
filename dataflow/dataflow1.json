@@ -26,6 +26,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "Sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "MoviesSink",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
 				}
 			],
 			"transformations": [
@@ -42,7 +49,7 @@
 					"name": "AlterRow1"
 				}
 			],
-			"script": "source(output(\n\t\tmovie as string,\n\t\ttitle as string,\n\t\tgenres as string,\n\t\tyear as string,\n\t\tRating as string,\n\t\t{Rotton Tomato} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> MoviesDB\nMoviesDB filter(toInteger(year) >= 1980 && toInteger(year) <= 2000 && rlike(genres, 'Comedy')) ~> FilterYears\nFilterYears aggregate(groupBy(year),\n\tAverageComedyRating = avg(toInteger(Rating)),\n\t\tAverageComedyRottonTomato = avg(toInteger({Rotton Tomato}))) ~> AggregateComedyRating\nMoviesDB sort(asc(toInteger(year), true),\n\tpartitionBy('hash', 1)) ~> SortbyYear\nMoviesDB alterRow(deleteIf(isNull(year)),\n\tpartitionBy('hash', 1)) ~> AlterRow1\nAggregateComedyRating sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['MoviesDBComedyRatings.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Sink\nSortbyYear sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['MoviesDBsortedbyYear.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Sink2"
+			"script": "source(output(\n\t\tmovie as string,\n\t\ttitle as string,\n\t\tgenres as string,\n\t\tyear as string,\n\t\tRating as string,\n\t\t{Rotton Tomato} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> MoviesDB\nMoviesDB filter(toInteger(year) >= 1980 && toInteger(year) <= 2000 && rlike(genres, 'Comedy')) ~> FilterYears\nFilterYears aggregate(groupBy(year),\n\tAverageComedyRating = avg(toInteger(Rating)),\n\t\tAverageComedyRottonTomato = avg(toInteger({Rotton Tomato})),\n\tpartitionBy('hash', 1)) ~> AggregateComedyRating\nMoviesDB sort(asc(toInteger(year), true),\n\tpartitionBy('hash', 1)) ~> SortbyYear\nMoviesDB alterRow(deleteIf(isNull(year)),\n\tpartitionBy('hash', 1)) ~> AlterRow1\nAggregateComedyRating sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['MoviesDBComedyRatings.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Sink\nSortbyYear sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['MoviesDBsortedbyYear.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Sink2\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['MoviesDBClean.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
 		}
 	}
 }
