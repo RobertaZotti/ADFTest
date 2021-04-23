@@ -19,14 +19,40 @@
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
 				}
 			],
 			"transformations": [
 				{
 					"name": "DerivedColumn1"
+				},
+				{
+					"name": "ConditionalSplit1"
+				},
+				{
+					"name": "Select1"
+				},
+				{
+					"name": "Select2"
+				},
+				{
+					"name": "Select3"
 				}
 			],
-			"script": "source(output(\n\t\tId as string,\n\t\tIsDeleted as boolean,\n\t\tRowVersion as binary,\n\t\tAreaId as string,\n\t\tCompanyId as string,\n\t\tBuyerId as string,\n\t\tBankId as string,\n\t\tMovementType as integer,\n\t\tValueDate as timestamp,\n\t\tMovementDate as timestamp,\n\t\tCurrencyId as string,\n\t\tTotalAmount as decimal(19,4),\n\t\tResidualAmount as decimal(18,2)\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource1 derive({Low Amount} = TotalAmount <= 1000,\n\t\t{Medium Amount} = TotalAmount > 1000 && TotalAmount <=10000,\n\t\t{High Amount} = TotalAmount > 10000,\n\tpartitionBy('hash', 1)) ~> DerivedColumn1\nDerivedColumn1 sink(input(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string,\n\t\tColumn_6 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['3FSCashDB.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
+			"script": "source(output(\n\t\tId as string,\n\t\tIsDeleted as boolean,\n\t\tRowVersion as binary,\n\t\tAreaId as string,\n\t\tCompanyId as string,\n\t\tBuyerId as string,\n\t\tBankId as string,\n\t\tMovementType as integer,\n\t\tValueDate as timestamp,\n\t\tMovementDate as timestamp,\n\t\tCurrencyId as string,\n\t\tTotalAmount as decimal(19,4),\n\t\tResidualAmount as decimal(18,2)\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource1 derive({Low Amount} = TotalAmount <= 1000,\n\t\t{Medium Amount} = TotalAmount > 1000 && TotalAmount <=10000,\n\t\t{High Amount} = TotalAmount > 10000,\n\tpartitionBy('hash', 1)) ~> DerivedColumn1\nDerivedColumn1 split({Low Amount}==true(),\n\t{Medium Amount}==true(),\n\tdisjoint: false,\n\tpartitionBy('hash', 1)) ~> ConditionalSplit1@(LowValues, MediumValues, HighValues)\nConditionalSplit1@LowValues select(mapColumn(\n\t\tId,\n\t\tIsDeleted,\n\t\tRowVersion,\n\t\tAreaId,\n\t\tCompanyId,\n\t\tBuyerId,\n\t\tBankId,\n\t\tMovementType,\n\t\tValueDate,\n\t\tMovementDate,\n\t\tCurrencyId,\n\t\tTotalAmount,\n\t\tResidualAmount\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nConditionalSplit1@MediumValues select(mapColumn(\n\t\tId,\n\t\tIsDeleted,\n\t\tRowVersion,\n\t\tAreaId,\n\t\tCompanyId,\n\t\tBuyerId,\n\t\tBankId,\n\t\tMovementType,\n\t\tValueDate,\n\t\tMovementDate,\n\t\tCurrencyId,\n\t\tTotalAmount,\n\t\tResidualAmount\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select2\nConditionalSplit1@HighValues select(mapColumn(\n\t\tId,\n\t\tIsDeleted,\n\t\tRowVersion,\n\t\tAreaId,\n\t\tCompanyId,\n\t\tBuyerId,\n\t\tBankId,\n\t\tMovementType,\n\t\tValueDate,\n\t\tMovementDate,\n\t\tCurrencyId,\n\t\tTotalAmount,\n\t\tResidualAmount\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select3\nSelect1 sink(input(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string,\n\t\tColumn_6 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['3FSCashDB-low.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nSelect2 sink(input(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string,\n\t\tColumn_6 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['3FSCashDB-medium.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2\nSelect3 sink(input(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string,\n\t\tColumn_6 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['3FSCashDB-high.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink3"
 		}
 	}
 }
