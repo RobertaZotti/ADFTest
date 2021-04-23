@@ -1,0 +1,76 @@
+{
+	"name": "AzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Id",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "IsDeleted",
+				"type": "bit"
+			},
+			{
+				"name": "RowVersion",
+				"type": "timestamp"
+			},
+			{
+				"name": "AreaId",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "CompanyId",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "BuyerId",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "BankId",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "MovementType",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "ValueDate",
+				"type": "datetime2",
+				"scale": 7
+			},
+			{
+				"name": "MovementDate",
+				"type": "datetime2",
+				"scale": 7
+			},
+			{
+				"name": "CurrencyId",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "TotalAmount",
+				"type": "decimal",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "ResidualAmount",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			}
+		],
+		"typeProperties": {
+			"schema": "accounting",
+			"table": "Cash"
+		}
+	}
+}
