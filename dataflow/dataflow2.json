@@ -12,13 +12,21 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "DerivedColumn1"
 				}
 			],
-			"script": "source(output(\n\t\tId as string,\n\t\tIsDeleted as boolean,\n\t\tRowVersion as binary,\n\t\tAreaId as string,\n\t\tCompanyId as string,\n\t\tBuyerId as string,\n\t\tBankId as string,\n\t\tMovementType as integer,\n\t\tValueDate as timestamp,\n\t\tMovementDate as timestamp,\n\t\tCurrencyId as string,\n\t\tTotalAmount as decimal(19,4),\n\t\tResidualAmount as decimal(18,2)\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource1 derive({Low Amount} = TotalAmount <= 1000,\n\t\t{Medium Amount} = TotalAmount > 1000 && TotalAmount <=10000,\n\t\t{High Amount} = TotalAmount > 10000,\n\tpartitionBy('hash', 1)) ~> DerivedColumn1"
+			"script": "source(output(\n\t\tId as string,\n\t\tIsDeleted as boolean,\n\t\tRowVersion as binary,\n\t\tAreaId as string,\n\t\tCompanyId as string,\n\t\tBuyerId as string,\n\t\tBankId as string,\n\t\tMovementType as integer,\n\t\tValueDate as timestamp,\n\t\tMovementDate as timestamp,\n\t\tCurrencyId as string,\n\t\tTotalAmount as decimal(19,4),\n\t\tResidualAmount as decimal(18,2)\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource1 derive({Low Amount} = TotalAmount <= 1000,\n\t\t{Medium Amount} = TotalAmount > 1000 && TotalAmount <=10000,\n\t\t{High Amount} = TotalAmount > 10000,\n\tpartitionBy('hash', 1)) ~> DerivedColumn1\nDerivedColumn1 sink(input(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string,\n\t\tColumn_6 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['3FSCashDB.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
 		}
 	}
 }
